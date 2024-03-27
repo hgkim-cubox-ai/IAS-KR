@@ -31,12 +31,10 @@ def load_dataloader_dict(cfg: Dict[str, Any]) -> Dict[str, DataLoader]:
         
         # Concatenate all possible datasets in data_split (train/test/val)
         datasets = []
-        for dataset_name, sub_splits in dataset_names.items():
-            if sub_splits is None:
-                datasets.append(DATASET_DICT[dataset_name](cfg, dataset_name, data_split=='train'))
-            else:   # Some datasets are provided with a train/val/test split.
-                for sub_split in sub_splits:
-                    datasets.append(DATASET_DICT[dataset_name](cfg, sub_split=='train'))
+        for dataset_name in dataset_names:
+            datasets.append(
+                DATASET_DICT[dataset_name](cfg, dataset_name, data_split=='train')
+            )
         dataset = ConcatDataset(datasets)
         sampler = DistributedSampler(dataset) if data_split=='train' else None
         dataloader_dict[data_split] = DataLoader(

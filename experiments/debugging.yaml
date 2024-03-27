@@ -16,14 +16,14 @@ Data:
     C:/Users/heegyoon/Desktop/data/IAS/kr/processed
   datasets:
     train:
-      cubox_4k_2211
-      IAS_cubox_train_230102_renew
-      IAS_cubox_train_230117_extra
-      real_driver
-      real_id
-      real_passport
+      - cubox_4k_2211
+      - IAS_cubox_train_230102_renew
+      - IAS_cubox_train_230117_extra
+      - real_driver
+      - real_id
+      - real_passport
     test:
-      shinhan
+      - shinhan
     val:
   n_patches:
     9

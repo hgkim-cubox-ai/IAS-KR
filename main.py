@@ -26,7 +26,7 @@ def main(cfg):
     # Basic setttings
     rank = setup(cfg)
     
-    dataloader_dict = load_dataloader_dict(cfg)
+    dataloader_dict = load_dataloader_dict(cfg['Data'])
     model, optimizer = load_model_and_optimizer(cfg, rank)
     loss_fn_dict = load_loss_fn_dict(cfg)
     # if cfg['mode'] == 'train':

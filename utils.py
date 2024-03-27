@@ -31,7 +31,7 @@ def prepare_path(path: str) -> None:
         path (str): path to directory
     """
     try:
-        os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
     except:
         raise ValueError(f'Existing path!: {path}')
 """
