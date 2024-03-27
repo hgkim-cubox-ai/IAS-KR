@@ -51,8 +51,13 @@ class IASDataset(Dataset):
                 self.labels.append(2)
             else:
                 raise ValueError(f'Invalid spoof type. {json_path}')
-            bbox = annots['to_crop']    # [top, bottom, left, right]
-            self.id_bboxes.append([bbox[0], bbox[2], bbox[1]-bbox[0], bbox[3]-bbox[2]])    
+            
+            if 'to_crop' in annots:
+                bbox = annots['to_crop']    # [top, bottom, left, right]
+                bbox = [bbox[0], bbox[2], bbox[1]-bbox[0], bbox[3]-bbox[2]]
+            else:
+                bbox = None
+            self.id_bboxes.append(bbox)
     
     def __len__(self):
         return len(self.img_paths)
@@ -70,12 +75,18 @@ class IASDataset(Dataset):
         
         # Crop idcard
         bbox = self.id_bboxes[idx]  # [top, left, height, width]
-        img = crop(img, bbox[0], bbox[1], bbox[2], bbox[3])
+        if bbox is not None:
+            img = crop(img, bbox[0], bbox[1], bbox[2], bbox[3])
         
         # Crop patch
         patches = torch.stack(
             [self.random_crop(img) for _ in range(self.cfg['n_patches'])]
         )
+        
+        # Normalize
+        mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
+        std = torch.std(patches.float(), dim=(2,3), keepdim=True)
+        patches = (patches - mean) / std
         
         return patches, label
 
@@ -87,7 +98,7 @@ if __name__ == '__main__':
             'patch_size': 128,
             'n_patches': 9
         },
-        'cubox_4k_2211'
+        'shinhan'
     )
     from torch.utils.data import DataLoader
     loader = DataLoader(dataset, 7, False)
