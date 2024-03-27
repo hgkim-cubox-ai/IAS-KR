@@ -25,7 +25,11 @@ Data:
     test:
       - shinhan
     val:
-
+  resize:
+    height:
+      224
+    width:
+      224
   n_patches:
     9
   patch_size:

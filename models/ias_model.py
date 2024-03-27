@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from backbone import ResNet
+from .backbone import CNN_ResNet
 
 import os
 import sys
@@ -14,7 +14,7 @@ class IASModel(nn.Module):
         super(IASModel, self).__init__()
         
         self.cfg = cfg
-        self.backbone = ResNet(cfg['backbone'])
+        self.backbone = CNN_ResNet(cfg['backbone'])
 
     def forward(self, x):
         return x

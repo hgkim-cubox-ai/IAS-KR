@@ -31,6 +31,11 @@ class IASDataset(Dataset):
         self.random_crop = transforms.Compose([
             transforms.RandomCrop(cfg['patch_size'])
         ])
+        self.resize = transforms.Compose([
+            transforms.Resize(
+                (cfg['resize']['height'], cfg['resize']['width']),
+                transforms.InterpolationMode.BICUBIC)
+        ])
         
         # Image path
         img_paths = os.path.join(cfg['data_path'], dataset_name, '*.*')
@@ -83,12 +88,18 @@ class IASDataset(Dataset):
             [self.random_crop(img) for _ in range(self.cfg['n_patches'])]
         )
         
+        # Resize image
+        img = self.resize(img)
+        
         # Normalize
+        mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
+        std = torch.std(img.float(), dim=(1,2), keepdim=True)
+        img = (img - mean) / std
         mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
         std = torch.std(patches.float(), dim=(2,3), keepdim=True)
         patches = (patches - mean) / std
         
-        return patches, label
+        return img, patches, label
 
 
 if __name__ == '__main__':
@@ -96,7 +107,8 @@ if __name__ == '__main__':
         {
             'data_path': 'C:/Users/heegyoon/Desktop/data/IAS/kr/processed',
             'patch_size': 128,
-            'n_patches': 9
+            'n_patches': 9,
+            'resize': {'height': 224, 'width': 224}
         },
         'shinhan'
     )
@@ -104,4 +116,4 @@ if __name__ == '__main__':
     loader = DataLoader(dataset, 7, False)
     
     for i, (patches, label) in enumerate(loader):
-        print(patches.size(), label)
+        print(torch.sum(patches, dim=(3,4)))

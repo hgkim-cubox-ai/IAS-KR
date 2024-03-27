@@ -2,9 +2,9 @@ import torch.nn as nn
 import torchvision.models as models
 
 
-class ResNet(nn.Module):
+class CNN_ResNet(nn.Module):
     def __init__(self, backbone):
-        super(ResNet, self).__init__()
+        super(CNN_ResNet, self).__init__()
         
         if backbone == 'resnet18':
             model = models.resnet18()
