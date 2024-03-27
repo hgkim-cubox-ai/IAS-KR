@@ -4,6 +4,8 @@ from glob import glob
 
 import torch
 from torch.utils.data import Dataset, DataLoader
+from torchvision.io import read_image
+from torchvision import transforms
 
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
