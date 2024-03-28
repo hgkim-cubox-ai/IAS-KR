@@ -1,9 +1,7 @@
-from .kld import KLDLoss
-from torch.nn import MSELoss, BCELoss
+from torch.nn import MSELoss, CrossEntropyLoss
 
 
 LOSS_FN_DICT = {
     'mse': MSELoss,
-    'kld': KLDLoss,
-    'bce': BCELoss
+    'crossentropy': CrossEntropyLoss
 }
