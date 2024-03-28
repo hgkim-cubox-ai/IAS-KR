@@ -57,8 +57,8 @@ class IASDataset(Dataset):
             else:
                 raise ValueError(f'Invalid spoof type. {json_path}')
             
-            if 'to_crop' in annots:
-                bbox = annots['to_crop']    # [top, bottom, left, right]
+            if 'idcard_bbox' in annots:
+                bbox = annots['idcard_bbox']    # [top, bottom, left, right]
                 bbox = [bbox[0], bbox[2], bbox[1]-bbox[0], bbox[3]-bbox[2]]
             else:
                 bbox = None
