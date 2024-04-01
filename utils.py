@@ -123,27 +123,63 @@ def is_image_file(filename: str) -> bool:
     return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
 
 
+def calculate_accuracy(pred, gt):
+    pred = torch.max(pred.data, dim=1)[1]
+    acc = (pred == gt).sum() / len(pred)
+    
+    idx_r = (gt == 0).nonzero().view(-1)
+    idx_p = (gt == 1).nonzero().view(-1)
+    idx_d = (gt == 2).nonzero().view(-1)
+    acc_r = (pred[idx_r] == gt[idx_r]).float().sum()
+    acc_p = (pred[idx_p] == gt[idx_p]).float().sum()
+    acc_d = (pred[idx_d] == gt[idx_d]).float().sum()
+    
+    acc.mul_(100)
+    acc_r.div_(len(idx_r)+1e-8).mul_(100)
+    acc_p.div_(len(idx_p)+1e-8).mul_(100)
+    acc_d.div_(len(idx_d)+1e-8).mul_(100)
+   
+    return acc, [acc_r, acc_p, acc_d]
+
+
 def terminate():
     pass
 
 
 class AverageMeter(object):
     def __init__(self):
-        self.items = OrderedDict()
-    
-    def add(self, key: str, value: Any):
-        if key not in self.items:
-            self.items[key] = []
-        self.items[key].append(value)
-    
-    def means(self):
-        return OrderedDict([
-            (k, np.mean(v)) for k, v in self.items.items() if len(v) > 0
-        ])
+        self.reset()
     
     def reset(self):
-        for k in self.items:
-            self.items[k] = []
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+    
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+
+# class AverageMeter(object):
+#     def __init__(self):
+#         self.items = OrderedDict()
+    
+#     def add(self, key: str, value: Any):
+#         if key not in self.items:
+#             self.items[key] = []
+#         self.items[key].append(value)
+    
+#     def means(self):
+#         return OrderedDict([
+#             (k, np.mean(v)) for k, v in self.items.items() if len(v) > 0
+#         ])
+    
+#     def reset(self):
+#         for k in self.items:
+#             self.items[k] = []
 
 
 if __name__ == '__main__':

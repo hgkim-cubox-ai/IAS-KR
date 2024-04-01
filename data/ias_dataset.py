@@ -1,10 +1,10 @@
 import os
+import cv2
 import json
 from glob import glob
 
 import torch
 from torch.utils.data import Dataset
-from torchvision.io import read_image
 from torchvision import transforms
 from torchvision.transforms.functional import crop
 
@@ -59,7 +59,7 @@ class IASDataset(Dataset):
             
             if 'idcard_bbox' in annots:
                 bbox = annots['idcard_bbox']    # [top, bottom, left, right]
-                bbox = [bbox[0], bbox[2], bbox[1]-bbox[0], bbox[3]-bbox[2]]
+                # bbox = [bbox[0], bbox[2], bbox[1]-bbox[0], bbox[3]-bbox[2]]
             else:
                 bbox = None
             self.id_bboxes.append(bbox)
@@ -67,53 +67,106 @@ class IASDataset(Dataset):
     def __len__(self):
         return len(self.img_paths)
     
-    def imshow(self, img):
+    def imshow(self, img, img2=None, resize=False, fname=None):
         import matplotlib.pyplot as plt
         from torchvision.transforms.functional import to_pil_image
+        _resize = transforms.Compose([
+            transforms.Resize(
+                (448,448),
+                transforms.InterpolationMode.BICUBIC)
+        ])
+        if resize:
+            img = _resize(img)
+            img2 = _resize(img2)
         p = to_pil_image(img)
+        p2 = to_pil_image(img2)
+        plt.subplot(211)
+        plt.title(fname)
         plt.imshow(p)
+        plt.subplot(212)
+        plt.imshow(p2)
         plt.show()
+        
+        # import numpy as np
+        
+        # img = resize(img)
+        # n = np.transpose(img.numpy(), [2,1,0])
+        # n = n[:,:,::-1]
+        # cv2.imshow('n', n)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+    
+    def np_to_tensor(self, img):
+        img = torch.from_numpy(img)
+        img = torch.permute(img, [2,0,1])   # HWC -> CHW
+        return img
+    
+    def read_image(self, path):
+        # return: RGB, CxHxW Tensor
+        img = cv2.imread(path)  # torchvision이나 pil로 읽으면 돌아감
+        img = img[:,:,::-1].copy()  # RGB -> RGB
+        return img
+        
     
     def __getitem__(self, idx: int):
-        img = read_image(self.img_paths[idx])
         label = self.labels[idx]
+        img = self.read_image(self.img_paths[idx])
         
         # Crop idcard
         bbox = self.id_bboxes[idx]  # [top, left, height, width]
         if bbox is not None:
-            img = crop(img, bbox[0], bbox[1], bbox[2], bbox[3])
+            img = img[bbox[0]:bbox[1], bbox[2]:bbox[3], :]
+            # img = crop(img, bbox[0], bbox[1], bbox[2], bbox[3])
         
-        # Crop patch
-        patches = torch.stack(
-            [self.random_crop(img) for _ in range(self.cfg['n_patches'])]
-        )
+        print(bbox)
+        self.imshow(self.np_to_tensor(img),
+                    self.np_to_tensor(img),
+                    fname=os.path.basename(self.img_paths[idx]))
         
-        # Resize image
-        img = self.resize(img)
+        # patch = self.random_crop(img)
+        # self.imshow(img, patch, 
+        #             fname=os.path.basename(self.img_paths[idx]))
         
-        # Normalize
-        mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
-        std = torch.std(img.float(), dim=(1,2), keepdim=True)
-        img = (img - mean) / std
-        mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
-        std = torch.std(patches.float(), dim=(2,3), keepdim=True)
-        patches = (patches - mean) / std
+        return torch.tensor([1])
         
-        return img, patches, label
+        # # Crop patch
+        # patches = torch.stack(
+        #     [self.random_crop(img) for _ in range(self.cfg['n_patches'])]
+        # )
+        
+        
+        
+        # # Resize image
+        # img = self.resize(img)
+        
+        # # Normalize
+        # # mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
+        # # std = torch.std(img.float(), dim=(1,2), keepdim=True)
+        # # img = (img - mean) / std
+        # mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
+        # std = torch.std(patches.float(), dim=(2,3), keepdim=True)
+        # patches = (patches - mean) / std
+        
+        # if torch.isnan(patches).sum().item() > 0:
+        #     print(self.img_paths[idx])
+        
+        # return {'img': img, 'patches': patches, 'label': label}
 
 
 if __name__ == '__main__':
     dataset = IASDataset(
         {
             'data_path': 'C:/Users/heegyoon/Desktop/data/IAS/kr/processed',
-            'patch_size': 128,
+            'patch_size': 256,
             'n_patches': 9,
             'resize': {'height': 224, 'width': 224}
         },
-        'shinhan'
+        'IAS_cubox_train_230102_renew'
     )
     from torch.utils.data import DataLoader
-    loader = DataLoader(dataset, 7, False)
+    from tqdm import tqdm
+    loader = DataLoader(dataset, 1, False)
     
-    for i, (patches, label) in enumerate(loader):
-        print(torch.sum(patches, dim=(3,4)))
+    print(len(loader))
+    for i, (patches) in tqdm(enumerate(loader)):
+        pass

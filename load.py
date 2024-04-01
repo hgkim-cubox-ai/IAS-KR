@@ -36,7 +36,8 @@ def load_dataloader_dict(cfg: Dict[str, Any]) -> Dict[str, DataLoader]:
                 DATASET_DICT[dataset_name](cfg, dataset_name, data_split=='train')
             )
         dataset = ConcatDataset(datasets)
-        sampler = DistributedSampler(dataset) if data_split=='train' else None
+        # sampler = DistributedSampler(dataset) if data_split=='train' else None
+        sampler = None
         dataloader_dict[data_split] = DataLoader(
             # FIXME: shuffle
             dataset=dataset, batch_size=cfg['batch_size'], shuffle=False,
@@ -61,7 +62,7 @@ def load_model_and_optimizer(
     # Model
     model = MODEL_DICT[cfg['model']](cfg)
     model.to(device_id)
-    model = DDP(model, device_ids=[device_id])
+    # model = DDP(model, device_ids=[device_id])
     print(f'Model on rank {rank}')
     
     # Load weight

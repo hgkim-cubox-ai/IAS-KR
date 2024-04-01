@@ -21,12 +21,14 @@ class IASModel(nn.Module):
             nn.Linear(512, 64),
             nn.ReLU(inplace=True),
             nn.Linear(64, 3),
-            nn.Softmax()
+            nn.Softmax(dim=1)
         )
 
     def forward(self, x):
         B, P, C, H, W = x.size()
         x = x.view(B*P, C, H, W)
+        if torch.isnan(x).sum().item() > 0:
+            print('')
         
         x = self.backbone(x)
         x = x.view(B*P, -1)
