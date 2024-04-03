@@ -8,6 +8,8 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from torchvision.transforms.functional import crop
 
+from torchvision.io import read_image
+
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
@@ -82,9 +84,9 @@ class IASDataset(Dataset):
         p2 = to_pil_image(img2)
         plt.subplot(211)
         plt.title(fname)
-        plt.imshow(p)
+        plt.imshow(p, cmap='gray')
         plt.subplot(212)
-        plt.imshow(p2)
+        plt.imshow(p2, cmap='gray')
         plt.show()
         
         # import numpy as np
@@ -106,7 +108,6 @@ class IASDataset(Dataset):
         img = cv2.imread(path)  # torchvision이나 pil로 읽으면 돌아감
         img = img[:,:,::-1].copy()  # RGB -> RGB
         return img
-        
     
     def __getitem__(self, idx: int):
         label = self.labels[idx]
@@ -116,41 +117,32 @@ class IASDataset(Dataset):
         bbox = self.id_bboxes[idx]  # [top, left, height, width]
         if bbox is not None:
             img = img[bbox[0]:bbox[1], bbox[2]:bbox[3], :]
-            # img = crop(img, bbox[0], bbox[1], bbox[2], bbox[3])
         
-        print(bbox)
-        self.imshow(self.np_to_tensor(img),
-                    self.np_to_tensor(img),
-                    fname=os.path.basename(self.img_paths[idx]))
+        img = self.np_to_tensor(img)
+        patches = torch.stack(
+            [self.random_crop(img) for _ in range(self.cfg['n_patches'])]
+        )
         
-        # patch = self.random_crop(img)
-        # self.imshow(img, patch, 
+        # self.imshow(img, patches[0], resize=True,
         #             fname=os.path.basename(self.img_paths[idx]))
         
-        return torch.tensor([1])
+        # Resize image
+        img = self.resize(img)
         
-        # # Crop patch
-        # patches = torch.stack(
-        #     [self.random_crop(img) for _ in range(self.cfg['n_patches'])]
-        # )
+        # Normalize
+        mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
+        std = torch.std(img.float(), dim=(1,2), keepdim=True)
+        img = (img - mean) / std
+        mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
+        std = torch.std(patches.float(), dim=(2,3), keepdim=True)
+        patches = (patches - mean) / std
         
         
         
-        # # Resize image
-        # img = self.resize(img)
+        if torch.isnan(patches).sum().item() > 0:
+            print(self.img_paths[idx])
         
-        # # Normalize
-        # # mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
-        # # std = torch.std(img.float(), dim=(1,2), keepdim=True)
-        # # img = (img - mean) / std
-        # mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
-        # std = torch.std(patches.float(), dim=(2,3), keepdim=True)
-        # patches = (patches - mean) / std
-        
-        # if torch.isnan(patches).sum().item() > 0:
-        #     print(self.img_paths[idx])
-        
-        # return {'img': img, 'patches': patches, 'label': label}
+        return {'img': img, 'patches': patches, 'label': label}
 
 
 if __name__ == '__main__':

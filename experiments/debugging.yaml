@@ -17,7 +17,7 @@ Data:
   datasets:
     train:
       - cubox_4k_2211
-      - IAS_cubox_train_230102_renew
+      # - IAS_cubox_train_230102_renew
       - IAS_cubox_train_230117_extra
       - real_driver
       - real_id
