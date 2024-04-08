@@ -6,7 +6,7 @@ seed:
 save_path:
   results/train_on_image_1
 distributed:
-  backend: 'gloo'
+  backend: 'nccl'
   address: 'localhost'
   port: '13579'
 
