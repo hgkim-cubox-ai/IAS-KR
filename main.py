@@ -25,7 +25,8 @@ def parse_args() -> Dict[str, Any]:
 def main(cfg):
     # Basic setttings
     rank = setup(cfg)
-    print(f'rank: {rank}')
+    with open(f'{rank}.txt', 'w') as f:
+        f.write(f'rank: {rank}\n')
     return
     
     dataloader_dict = load_dataloader_dict(cfg['Data'])
