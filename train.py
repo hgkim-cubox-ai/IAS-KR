@@ -110,8 +110,9 @@ def train(cfg, rank, dataloader_dict, model, optimizer, loss_fn_dict):
         cur_acc = results_dict['test'][epoch][1]
         is_best = cur_acc > max_acc
         max_acc = max(cur_acc, max_acc)
-        save_checkpoint(
-            is_best,
-            {'epoch': epoch+1, 'state_dict': model.state_dict()},
-            cfg['save_path']
-        )
+        if rank == 0:
+            save_checkpoint(
+                is_best,
+                {'epoch': epoch+1, 'state_dict': model.state_dict()},
+                cfg['save_path']
+            )
