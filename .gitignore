@@ -6,7 +6,9 @@ results
 docker
 settings
 tmp
+slurm
 
+*.sh
 *.out
 *.pth
 *.onnx
