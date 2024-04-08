@@ -48,7 +48,7 @@ class IASDataset(Dataset):
         self.id_bboxes = []
         json_paths = [os.path.splitext(i)[0]+'.json' for i in self.img_paths]
         for json_path in json_paths:
-            with open(json_path, 'r') as f:
+            with open(json_path, 'r', encoding='utf-8') as f:
                 annots = json.load(f)
             if annots['spoof_type'] in LABEL_DICT['Real']:
                 self.labels.append(0)
