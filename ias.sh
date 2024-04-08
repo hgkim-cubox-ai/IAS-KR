@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --partition=all
-#SBATCH --nodelist=hpe162
+#SBATCH --nodelist=hpe161
 #SBATCH --nodes=1
 #SBATCH --job-name=ias
 #SBATCH --ntasks=1
@@ -13,3 +13,5 @@
 #SBATCH --container-image /purestorage/project/hgkim/enroot/images/ias.sqsh
 #SBATCH --container-mounts=/purestorage:/purestorage
 #SBATCH --container-writable
+
+torchrun --nnodes=1 --nproc_per_node=2 main.py --cfg experiments/train_on_image_1.yaml
