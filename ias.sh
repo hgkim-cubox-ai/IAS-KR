@@ -14,4 +14,5 @@
 #SBATCH --container-mounts=/purestorage:/purestorage
 #SBATCH --container-writable
 
-torchrun --nnodes=1 --nproc_per_node=2 main.py --cfg experiments/train_on_image_1.yaml
+# torchrun --nnodes=1 --nproc_per_node=2 main.py --cfg experiments/train_on_image_1.yaml
+nvidia-smi
