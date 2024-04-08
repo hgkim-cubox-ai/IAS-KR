@@ -15,4 +15,4 @@
 #SBATCH --container-writable
 
 # torchrun --nnodes=1 --nproc_per_node=2 main.py --cfg experiments/train_on_image_1.yaml
-nvidia-smi
+python -c "import torch; print(torch.__version__)"
