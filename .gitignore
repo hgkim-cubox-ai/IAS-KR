@@ -5,6 +5,7 @@ download
 results
 docker
 settings
+tmp
 
 *.pth
 *.onnx
