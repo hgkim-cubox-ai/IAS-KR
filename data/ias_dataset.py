@@ -109,6 +109,16 @@ class IASDataset(Dataset):
         img = img[:,:,::-1].copy()  # RGB -> RGB
         return img
     
+    def crop_patch(self, img):
+        N = self.cfg['n_patches']
+        H = self.cfg['patch_size']
+        W = self.cfg['patch_size']
+        patches = torch.zeros([N, 3, H, W])
+        for n in range(N):
+            patch = self.random_crop(img)
+            std = torch.std(patch.float(), dim=(1,2), keepdim=True)
+        return patches        
+    
     def __getitem__(self, idx: int):
         label = self.labels[idx]
         img = self.read_image(self.img_paths[idx])
@@ -134,15 +144,21 @@ class IASDataset(Dataset):
         std = torch.std(img.float(), dim=(1,2), keepdim=True)
         img = (img - mean) / std
         mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
-        std = torch.std(patches.float(), dim=(2,3), keepdim=True)
+        std = torch.std(patches.float(), dim=(2,3), keepdim=True) + 1e-12
         patches = (patches - mean) / std
         
+        data_dict = {'label': label}
+        if self.cfg['input'] == 'image':
+            data_dict['input'] = img
+        elif self.cfg['input'] == 'patch':
+            data_dict['input'] = patches
+        else:
+            raise ValueError
+
+        # if torch.isnan(patches).sum().item() > 0:
+        #     print(f'dataset {self.img_paths[idx]}')
         
-        
-        if torch.isnan(patches).sum().item() > 0:
-            print(self.img_paths[idx])
-        
-        return {'img': img, 'patches': patches, 'label': label}
+        return data_dict
 
 
 if __name__ == '__main__':
@@ -153,7 +169,7 @@ if __name__ == '__main__':
             'n_patches': 9,
             'resize': {'height': 224, 'width': 224}
         },
-        'IAS_cubox_train_230102_renew'
+        'cubox_4k_2211'
     )
     from torch.utils.data import DataLoader
     from tqdm import tqdm

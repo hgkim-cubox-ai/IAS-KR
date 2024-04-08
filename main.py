@@ -24,7 +24,7 @@ def parse_args() -> Dict[str, Any]:
 
 def main(cfg):
     # Basic setttings
-    # rank = setup(cfg)
+    rank = setup(cfg)
     rank = 0
     
     dataloader_dict = load_dataloader_dict(cfg['Data'])

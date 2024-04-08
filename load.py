@@ -20,7 +20,7 @@ def load_dataloader_dict(cfg: Dict[str, Any]) -> Dict[str, DataLoader]:
         cfg (Dict): config as dictionary
 
     Returns:
-        Dict: {'train': train_loader, 'test': test_loader}
+        Dict: {'train': train_loader, 'test': test_loader, 'val': val_loader}
     """
     dataloader_dict = {}
     all_datasets = cfg['datasets']

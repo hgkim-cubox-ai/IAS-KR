@@ -23,22 +23,33 @@ class IASModel(nn.Module):
             nn.Linear(64, 3),
             nn.Softmax(dim=1)
         )
+    
+    def _forward_image(self, img):
+        B = img.size(0)
+        img = self.backbone(img)
+        img = img.view(B, -1)
+        img = self.fc(img)
+        return img
+    
+    def _forward_patch(self, patches):
+        B, P, C, H, W = patches.size()
+        patches = patches.view(B*P, C, H, W)
+        if torch.isnan(patches).sum().item() > 0:
+            print('')
+        patches = self.backbone(patches)
+        patches = patches.view(B*P, -1)
+        patches = self.fc(patches)
+        patches = patches.view(B, P, -1)
+        patches = torch.mean(patches, dim=1)
+        return patches
 
     def forward(self, x):
-        B, P, C, H, W = x.size()
-        x = x.view(B*P, C, H, W)
-        if torch.isnan(x).sum().item() > 0:
-            print('')
-        
-        x = self.backbone(x)
-        x = x.view(B*P, -1)
-        x = self.fc(x)
-        x = x.view(B, P, -1)
-        
-        x = torch.mean(x, dim=1)
-        
-        return x
-
+        if x.dim() == 4:
+            return self._forward_image(x)
+        elif x.dim() == 5:
+            return self._forward_patch(x)
+        else:
+            raise ValueError
 
 if __name__ == '__main__':
     net = IASModel({'backbone': 'resnet50'})

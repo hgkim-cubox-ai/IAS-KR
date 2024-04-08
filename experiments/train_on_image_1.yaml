@@ -4,20 +4,21 @@ mode:
 seed:
   777
 save_path:
-  results/tmp2
+  results/train_on_image_1
 distributed:
   backend: 'gloo'
   address: 'localhost'
-  port: '12345'
+  port: '13579'
 
 # Data
 Data:
   data_path:
-    C:/Users/heegyoon/Desktop/data/IAS/kr/processed
+    /purestorage/datasets/IAS/kr
+    # C:/Users/heegyoon/Desktop/data/IAS/kr/processed
   datasets:
     train:
       - cubox_4k_2211
-      # - IAS_cubox_train_230102_renew
+      - IAS_cubox_train_230102_renew
       - IAS_cubox_train_230117_extra
       - real_driver
       - real_id
@@ -37,9 +38,9 @@ Data:
   patch_size:
     128
   batch_size:
-    16
+    128
   num_workers:
-    0
+    16
 
 # Architecture
 model:
@@ -49,7 +50,7 @@ backbone:
 
 # Train
 num_epochs:
-  3
+  30
 loss_functions:
   crossentropy:
     weight: 1.0

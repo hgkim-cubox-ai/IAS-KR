@@ -1,5 +1,5 @@
 from tqdm import tqdm
-
+import torch
 from utils import (save_checkpoint, send_data_dict_to_device,
                    calculate_accuracy,
                    AverageMeter)
@@ -16,23 +16,14 @@ def _train(cfg, rank, loader, model, optimizer, loss_fn_dict, epoch):
     
     with tqdm(loader, desc=f'[Train] Epoch {epoch+1}', ncols=150, unit='batch') as t:
         for i, input_dict in enumerate(t):
-            import torch
-            if torch.isnan(input_dict['patches']).sum().item() > 0:
-                print(i)
-            batch_size = input_dict['img'].size(0)
+            batch_size = input_dict['input'].size(0)
             input_dict = send_data_dict_to_device(input_dict, rank)
             
-            if torch.isnan(input_dict['patches']).sum().item() > 0:
-                print(i)
-            
-            pred = model(input_dict['patches'])
+            pred = model(input_dict['input'])
             label = input_dict['label']
             
             loss = loss_fn(pred, label)
-            
-            if torch.isnan(loss) or torch.isinf(loss):
-                print('invalid input detected at iteration ', i)
-                        
+                                    
             # Backward
             optimizer.zero_grad()
             loss.backward()
@@ -68,17 +59,11 @@ def _validate(cfg, rank, loader, model, loss_fn_dict, epoch, data_split):
     
     with tqdm(loader, desc=f'[{data_split}] Epoch {epoch+1}', ncols=150, unit='batch') as t:
         for i, input_dict in enumerate(t):
-            import torch
-            if torch.isnan(input_dict['patches']).sum().item() > 0:
-                print(i)
-            batch_size = input_dict['img'].size(0)
+            batch_size = input_dict['input'].size(0)
             input_dict = send_data_dict_to_device(input_dict, rank)
             
-            if torch.isnan(input_dict['patches']).sum().item() > 0:
-                print(i)
-            
             with torch.no_grad():
-                pred = model(input_dict['patches'])
+                pred = model(input_dict['input'])
             label = input_dict['label']
             
             loss = loss_fn(pred, label)

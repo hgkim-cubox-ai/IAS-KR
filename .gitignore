@@ -1,7 +1,10 @@
 __pycache__
 .vscode
 preprocessing
+download
 results
+docker
+settings
 
 *.pth
 *.onnx

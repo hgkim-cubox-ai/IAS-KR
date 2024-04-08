@@ -91,7 +91,6 @@ def send_data_dict_to_device(
 
 def save_checkpoint(is_best, state, save_path):    
     save_path = os.path.join(save_path, 'saved_models')
-    save_path = prepare_path(save_path)
     filename = '%d.pth' % (state['epoch'])
     best_filename = 'best_' + filename
     file_path = os.path.join(save_path, filename)
