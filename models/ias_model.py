@@ -15,20 +15,25 @@ class IASModel(nn.Module):
         
         self.cfg = cfg
         self.backbone = CNN_ResNet(cfg['backbone'])
-        self.fc = nn.Sequential(
-            nn.Linear(2048, 512),
-            nn.ReLU(inplace=True),
-            nn.Linear(512, 64),
-            nn.ReLU(inplace=True),
-            nn.Linear(64, 3),
-            nn.Softmax(dim=1)
-        )
+        self.make_regressor()
+    
+    def make_regressor(self):
+        fc_in = 2048 if self.cfg['backbone'] > 'resnet18' else 512
+        
+        regressor = []
+        regressor.append(nn.Linear(fc_in, self.cfg['regressor'][0]))
+        for i in range(len(self.cfg['regressor'])-1):
+            regressor.append(nn.ReLU(inplace=True))
+            regressor.append(nn.Linear(self.cfg['regressor'][i],self.cfg['regressor'][i+1]))
+        regressor.append(nn.Sigmoid())
+        self.regressor = nn.Sequential(*regressor)
+        
     
     def _forward_image(self, img):
         B = img.size(0)
         img = self.backbone(img)
         img = img.view(B, -1)
-        img = self.fc(img)
+        img = self.regressor(img)
         return img
     
     def _forward_patch(self, patches):
@@ -52,6 +57,10 @@ class IASModel(nn.Module):
             raise ValueError
 
 if __name__ == '__main__':
-    net = IASModel({'backbone': 'resnet50'})
-    p = torch.randn([7, 9, 3, 128, 128])
-    out = net(p)
+    net = IASModel({
+        'backbone': 'resnet50',
+        'regressor': [2048, 256, 16, 1]
+    })
+    # p = torch.randn([7, 9, 3, 128, 128])
+    i = torch.randn([7, 3, 224, 224])
+    out = net(i)

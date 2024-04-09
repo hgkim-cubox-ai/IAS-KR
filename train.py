@@ -9,10 +9,9 @@ def _train(cfg, rank, loader, model, optimizer, loss_fn_dict, epoch):
     model.train()
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
-    r_meter = AverageMeter()
-    p_meter = AverageMeter()
-    d_meter = AverageMeter()
-    loss_fn = loss_fn_dict['crossentropy']['fn']
+    real_meter = AverageMeter()
+    fake_meter = AverageMeter()
+    loss_fn = loss_fn_dict['bce']['fn']
     
     with tqdm(loader, desc=f'[Train] Epoch {epoch+1}', ncols=150, unit='batch') as t:
         for i, input_dict in enumerate(t):
@@ -22,27 +21,25 @@ def _train(cfg, rank, loader, model, optimizer, loss_fn_dict, epoch):
             pred = model(input_dict['input'])
             label = input_dict['label']
             
-            loss = loss_fn(pred, label)
+            loss = loss_fn(pred, label.view(-1,1))
                                     
             # Backward
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             
-            acc, accs = calculate_accuracy(pred.data, label.data)
+            acc, real_acc, fake_acc = calculate_accuracy(pred.data, label.data)
             
             loss_meter.update(loss.item(), batch_size)
             acc_meter.update(acc.item(), batch_size)
-            r_meter.update(accs[0].item(), batch_size)
-            p_meter.update(accs[1].item(), batch_size)
-            d_meter.update(accs[2].item(), batch_size)
+            real_meter.update(real_acc.item(), batch_size)
+            fake_meter.update(fake_acc.item(), batch_size)
             
             t.set_postfix(
                 loss=loss_meter.avg,
                 acc=acc_meter.avg,
-                real=r_meter.avg,
-                paper=p_meter.avg,
-                display=d_meter.avg
+                real=real_meter.avg,
+                fake=fake_meter.avg,
             )
     
     return loss_meter.avg, acc_meter.avg
@@ -52,10 +49,9 @@ def _validate(cfg, rank, loader, model, loss_fn_dict, epoch, data_split):
     model.eval()
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
-    r_meter = AverageMeter()
-    p_meter = AverageMeter()
-    d_meter = AverageMeter()
-    loss_fn = loss_fn_dict['crossentropy']['fn']
+    real_meter = AverageMeter()
+    fake_meter = AverageMeter()
+    loss_fn = loss_fn_dict['bce']['fn']
     
     with tqdm(loader, desc=f'[{data_split}] Epoch {epoch+1}', ncols=150, unit='batch') as t:
         for i, input_dict in enumerate(t):
@@ -66,25 +62,23 @@ def _validate(cfg, rank, loader, model, loss_fn_dict, epoch, data_split):
                 pred = model(input_dict['input'])
             label = input_dict['label']
             
-            loss = loss_fn(pred, label)
+            loss = loss_fn(pred, label.view(-1,1))
             
             if torch.isnan(loss) or torch.isinf(loss):
                 print('invalid input detected at iteration ', i)
                         
-            acc, accs = calculate_accuracy(pred.data, label.data)
+            acc, real_acc, fake_acc = calculate_accuracy(pred.data, label.data)
             
             loss_meter.update(loss.item(), batch_size)
             acc_meter.update(acc.item(), batch_size)
-            r_meter.update(accs[0].item(), batch_size)
-            p_meter.update(accs[1].item(), batch_size)
-            d_meter.update(accs[2].item(), batch_size)
+            real_meter.update(real_acc.item(), batch_size)
+            fake_meter.update(fake_acc.item(), batch_size)
             
             t.set_postfix(
                 loss=loss_meter.avg,
                 acc=acc_meter.avg,
-                real=r_meter.avg,
-                paper=p_meter.avg,
-                display=d_meter.avg
+                real=real_meter.avg,
+                fake=fake_meter.avg,
             )
     
     return loss_meter.avg, acc_meter.avg

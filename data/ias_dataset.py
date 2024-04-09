@@ -51,11 +51,11 @@ class IASDataset(Dataset):
             with open(json_path, 'r', encoding='cp949') as f:
                 annots = json.load(f)
             if annots['spoof_type'] in LABEL_DICT['Real']:
-                self.labels.append(0)
-            elif annots['spoof_type'] in LABEL_DICT['Paper']:
                 self.labels.append(1)
+            elif annots['spoof_type'] in LABEL_DICT['Paper']:
+                self.labels.append(0)
             elif annots['spoof_type'] in LABEL_DICT['Display']:
-                self.labels.append(2)
+                self.labels.append(0)
             else:
                 raise ValueError(f'Invalid spoof type. {json_path}')
             
@@ -147,7 +147,7 @@ class IASDataset(Dataset):
         std = torch.std(patches.float(), dim=(2,3), keepdim=True) + 1e-12
         patches = (patches - mean) / std
         
-        data_dict = {'label': label}
+        data_dict = {'label': torch.tensor(label).float()}
         if self.cfg['input'] == 'image':
             data_dict['input'] = img
         elif self.cfg['input'] == 'patch':
@@ -167,14 +167,15 @@ if __name__ == '__main__':
             'data_path': 'C:/Users/heegyoon/Desktop/data/IAS/kr/processed',
             'patch_size': 256,
             'n_patches': 9,
-            'resize': {'height': 224, 'width': 224}
+            'resize': {'height': 224, 'width': 224},
+            'input': 'image'
         },
-        'cubox_4k_2211'
+        'real_id'
     )
     from torch.utils.data import DataLoader
     from tqdm import tqdm
-    loader = DataLoader(dataset, 1, False)
+    loader = DataLoader(dataset, 7, False)
     
     print(len(loader))
-    for i, (patches) in tqdm(enumerate(loader)):
+    for i, (data_dict) in tqdm(enumerate(loader)):
         pass

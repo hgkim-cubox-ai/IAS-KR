@@ -6,15 +6,14 @@ seed:
 save_path:
   results/train_on_image_1
 distributed:
-  backend: 'nccl'
-  address: 'localhost'
-  port: '13579'
+  backend: nccl
+  address: localhost
+  port: 13579
 
 # Data
 Data:
   data_path:
     /purestorage/datasets/IAS/kr
-    # C:/Users/heegyoon/Desktop/data/IAS/kr/processed
   datasets:
     train:
       - cubox_4k_2211
@@ -40,19 +39,24 @@ Data:
   batch_size:
     128
   num_workers:
-    16
+    32
 
 # Architecture
 model:
   ias_model
 backbone:
   resnet50
+regressor:
+  - 2048
+  - 256
+  - 16
+  - 1
 
 # Train
 num_epochs:
   30
 loss_functions:
-  crossentropy:
+  bce:
     weight: 1.0
 optimizer:
   adam

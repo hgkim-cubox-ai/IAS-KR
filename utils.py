@@ -123,23 +123,43 @@ def is_image_file(filename: str) -> bool:
     return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
 
 
-def calculate_accuracy(pred, gt):
-    pred = torch.max(pred.data, dim=1)[1]
-    acc = (pred == gt).sum() / len(pred)
+# def calculate_accuracy(pred, gt):
+#     pred = torch.max(pred.data, dim=1)[1]
+#     acc = (pred == gt).sum() / len(pred)
     
-    idx_r = (gt == 0).nonzero().view(-1)
-    idx_p = (gt == 1).nonzero().view(-1)
-    idx_d = (gt == 2).nonzero().view(-1)
-    acc_r = (pred[idx_r] == gt[idx_r]).float().sum()
-    acc_p = (pred[idx_p] == gt[idx_p]).float().sum()
-    acc_d = (pred[idx_d] == gt[idx_d]).float().sum()
+#     idx_r = (gt == 0).nonzero().view(-1)
+#     idx_p = (gt == 1).nonzero().view(-1)
+#     idx_d = (gt == 2).nonzero().view(-1)
+#     acc_r = (pred[idx_r] == gt[idx_r]).float().sum()
+#     acc_p = (pred[idx_p] == gt[idx_p]).float().sum()
+#     acc_d = (pred[idx_d] == gt[idx_d]).float().sum()
+    
+#     acc.mul_(100)
+#     acc_r.div_(len(idx_r)+1e-8).mul_(100)
+#     acc_p.div_(len(idx_p)+1e-8).mul_(100)
+#     acc_d.div_(len(idx_d)+1e-8).mul_(100)
+   
+#     return acc, [acc_r, acc_p, acc_d]
+
+
+def calculate_accuracy(pred, gt, th=0.5):
+    pred = torch.where(pred > th, 1.0, 0.0)
+    acc = (pred == gt).float().mean()
+    
+    pred = pred.view(-1)
+    gt = gt.view(-1)
+    
+    real_idx = (gt == 1).nonzero().view(-1)
+    fake_idx = (gt == 0).nonzero().view(-1)
+    
+    real_acc = (pred[real_idx] == gt[real_idx]).float().sum()
+    fake_acc = (pred[fake_idx] == gt[fake_idx]).float().sum()
     
     acc.mul_(100)
-    acc_r.div_(len(idx_r)+1e-8).mul_(100)
-    acc_p.div_(len(idx_p)+1e-8).mul_(100)
-    acc_d.div_(len(idx_d)+1e-8).mul_(100)
-   
-    return acc, [acc_r, acc_p, acc_d]
+    real_acc.div_(len(real_idx) + 1e-8).mul_(100)
+    fake_acc.div_(len(fake_idx) + 1e-8).mul_(100)
+        
+    return acc, real_acc, fake_acc
 
 
 def terminate():
