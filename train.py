@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import os
 import torch
 from utils import (save_checkpoint, send_data_dict_to_device,
                    calculate_accuracy,
@@ -113,3 +114,7 @@ def train(cfg, rank, dataloader_dict, model, optimizer, loss_fn_dict):
                 {'epoch': epoch+1, 'state_dict': model.state_dict()},
                 cfg['save_path']
             )
+    
+    log_path = os.path.join(cfg['save_path'], 'log.txt')
+    with open(log_path, 'w') as f:
+        f.writelines(log)
