@@ -13,7 +13,8 @@ def _train(cfg, rank, loader, model, optimizer, loss_fn_dict, epoch):
     fake_meter = AverageMeter()
     loss_fn = loss_fn_dict['bce']['fn']
     
-    with tqdm(loader, desc=f'[Train] Epoch {epoch+1}', ncols=150, unit='batch') as t:
+    with tqdm(loader, desc=f'[Train] Epoch {epoch+1}', ncols=150,
+              unit='batch', disable=rank) as t:
         for i, input_dict in enumerate(t):
             batch_size = input_dict['input'].size(0)
             input_dict = send_data_dict_to_device(input_dict, rank)
@@ -42,7 +43,7 @@ def _train(cfg, rank, loader, model, optimizer, loss_fn_dict, epoch):
                 fake=fake_meter.avg,
             )
     
-    return loss_meter.avg, acc_meter.avg
+    return loss_meter.avg, acc_meter.avg, real_meter.avg, fake_meter.avg
 
 
 def _validate(cfg, rank, loader, model, loss_fn_dict, epoch, data_split):
@@ -53,7 +54,8 @@ def _validate(cfg, rank, loader, model, loss_fn_dict, epoch, data_split):
     fake_meter = AverageMeter()
     loss_fn = loss_fn_dict['bce']['fn']
     
-    with tqdm(loader, desc=f'[{data_split}] Epoch {epoch+1}', ncols=150, unit='batch') as t:
+    with tqdm(loader, desc=f'[{data_split}] Epoch {epoch+1}', ncols=150,
+              unit='batch', disable=rank) as t:
         for i, input_dict in enumerate(t):
             batch_size = input_dict['input'].size(0)
             input_dict = send_data_dict_to_device(input_dict, rank)
@@ -81,27 +83,28 @@ def _validate(cfg, rank, loader, model, loss_fn_dict, epoch, data_split):
                 fake=fake_meter.avg,
             )
     
-    return loss_meter.avg, acc_meter.avg
+    return loss_meter.avg, acc_meter.avg, real_meter.avg, fake_meter.avg
             
 
 def train(cfg, rank, dataloader_dict, model, optimizer, loss_fn_dict):
-    results_dict = {}   # to be saved
-    for data_split in dataloader_dict:
-        results_dict[data_split] = {}
-    
+    log = []
     max_acc = 0
     
     for epoch in range(cfg['num_epochs']):
         # Train
-        results_dict['train'][epoch] = _train(cfg, rank, dataloader_dict['train'],
-                                              model, optimizer, loss_fn_dict, epoch)
+        acc = _train(cfg, rank, dataloader_dict['train'],
+                           model, optimizer, loss_fn_dict, epoch)
+        log.append(f'[Train] loss: {acc[0]:.3f}\tacc: {acc[1]:.3f}\t'
+                   f'real acc: {acc[2]:.3f}\tfake acc: {acc[3]:.3f}\n')
         
         # Val, test
         for data_split in [d for d in dataloader_dict if d != 'train']:
-            results_dict[data_split][epoch] = _validate(cfg, rank, dataloader_dict[data_split],
-                                                        model, loss_fn_dict, epoch, data_split)
+            acc = _validate(cfg, rank, dataloader_dict[data_split],
+                                 model, loss_fn_dict, epoch, data_split)
+            log.append(f'[{data_split}] loss: {acc[0]:.3f}\tacc: {acc[1]:.3f}\t'
+                       f'real acc: {acc[2]:.3f}\tfake acc: {acc[3]:.3f}\n')
 
-        cur_acc = results_dict['test'][epoch][1]
+        cur_acc = acc[1]
         is_best = cur_acc > max_acc
         max_acc = max(cur_acc, max_acc)
         if rank == 0:
