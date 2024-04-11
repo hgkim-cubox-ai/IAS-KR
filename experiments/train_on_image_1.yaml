@@ -45,7 +45,7 @@ Data:
 model:
   ias_model
 backbone:
-  resnet18
+  resnet50
 regressor:
   - 2048
   - 256
