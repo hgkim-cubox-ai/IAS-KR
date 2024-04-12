@@ -170,12 +170,38 @@ if __name__ == '__main__':
             'resize': {'height': 224, 'width': 224},
             'input': 'image'
         },
-        'real_id'
+        'shinhan'
     )
     from torch.utils.data import DataLoader
     from tqdm import tqdm
-    loader = DataLoader(dataset, 7, False)
+    loader = DataLoader(dataset, 1, False)
     
-    print(len(loader))
+    real = 0
+    fake = 0
+    
+    # print(len(loader))
     for i, (data_dict) in tqdm(enumerate(loader)):
-        pass
+        if data_dict['label'].item() == 1:
+            real += 1
+        else:
+            fake += 1
+    
+    print(len(loader), real, fake)
+
+
+"""
+Dataset                         total   real    fake
+--------------------------------------------------------
+[train]
+cubox_4k_2211                   1847    694     1153
+IAS_cubox_train_230102_renew    67573   5355    62218
+IAS_cubox_train_230117_extra    3552    355     3197
+real_driver                     478     478     0
+real_id                         375     375     0
+real_passport                   901     901     0
+                                74726   8158    66568
+--------------------------------------------------------
+[test]
+shinhan                         1374    127     1247
+--------------------------------------------------------
+"""
