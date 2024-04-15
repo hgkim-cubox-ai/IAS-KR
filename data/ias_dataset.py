@@ -69,27 +69,35 @@ class IASDataset(Dataset):
     def __len__(self):
         return len(self.img_paths)
     
-    def imshow(self, img, img2=None, resize=False, fname=None):
-        import matplotlib.pyplot as plt
-        from torchvision.transforms.functional import to_pil_image
-        _resize = transforms.Compose([
-            transforms.Resize(
-                (448,448),
-                transforms.InterpolationMode.BICUBIC)
-        ])
-        if resize:
-            img = _resize(img)
-            img2 = _resize(img2)
-        p = to_pil_image(img)
-        p2 = to_pil_image(img2)
-        plt.subplot(211)
-        plt.title(fname)
-        plt.imshow(p, cmap='gray')
-        plt.subplot(212)
-        plt.imshow(p2, cmap='gray')
-        plt.show()
+    def imshow(self, img, fname=None):
+        # import matplotlib.pyplot as plt
+        # from torchvision.transforms.functional import to_pil_image
+        # _resize = transforms.Compose([
+        #     transforms.Resize(
+        #         (448,448),
+        #         transforms.InterpolationMode.BICUBIC)
+        # ])
+        # if resize:
+        #     img = _resize(img)
+        #     img2 = _resize(img2)
+        # p = to_pil_image(img)
+        # p2 = to_pil_image(img2)
+        # plt.subplot(211)
+        # plt.title(fname)
+        # plt.imshow(p, cmap='gray')
+        # plt.subplot(212)
+        # plt.imshow(p2, cmap='gray')
+        # plt.show()
         
-        # import numpy as np
+        import numpy as np
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV_FULL)
+        h, s, v = cv2.split(hsv)
+        hsv_out = np.vstack([h, s, v])
+        cv2.imshow(f'{fname}', cv2.resize(img, dsize=None, fx=0.5, fy=0.5))
+        cv2.imshow('hsv', cv2.resize(hsv_out, dsize=None, fx=0.25, fy=0.25))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         
         # img = resize(img)
         # n = np.transpose(img.numpy(), [2,1,0])
@@ -107,6 +115,8 @@ class IASDataset(Dataset):
         # return: RGB, CxHxW Tensor
         img = cv2.imread(path)  # torchvision이나 pil로 읽으면 돌아감
         img = img[:,:,::-1].copy()  # RGB -> RGB
+        if self.cfg['color'] == 'hsv':
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL)
         return img
     
     def crop_patch(self, img):
@@ -168,13 +178,14 @@ if __name__ == '__main__':
             'patch_size': 256,
             'n_patches': 9,
             'resize': {'height': 224, 'width': 224},
-            'input': 'image'
+            'input': 'image',
+            'color': 'rgb'
         },
-        'shinhan'
+        'IAS_cubox_train_230117_extra'
     )
     from torch.utils.data import DataLoader
     from tqdm import tqdm
-    loader = DataLoader(dataset, 1, False)
+    loader = DataLoader(dataset, 1, True)
     
     real = 0
     fake = 0

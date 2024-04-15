@@ -4,7 +4,7 @@ mode:
 seed:
   777
 save_path:
-  results/train_on_image_1
+  results/train_on_image_hsv
 distributed:
   backend: nccl
   address: localhost
@@ -27,6 +27,8 @@ Data:
     val:
   input:
     image
+  color:
+    hsv
   resize:
     height:
       224
