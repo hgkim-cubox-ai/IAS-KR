@@ -12,6 +12,10 @@ class FCModel(nn.Module):
         self.patch_layer = nn.Sequential(
             nn.Conv1d(feature_dim, feature_dim, 1, 1),
             nn.ReLU(inplace=True),
+            nn.Conv1d(feature_dim, feature_dim, 1, 1),
+            nn.ReLU(inplace=True),
+            nn.Conv1d(feature_dim, feature_dim, 1, 1),
+            nn.ReLU(inplace=True),
             nn.Conv1d(feature_dim, 1024, 1, 1),
             nn.ReLU(inplace=True),
             nn.Conv1d(1024, 256, 1, 1),
