@@ -26,7 +26,7 @@ Data:
       - shinhan
     val:
   input:
-    image
+    patch
   color:
     hsv
   resize:
