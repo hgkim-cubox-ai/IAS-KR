@@ -26,6 +26,9 @@ class FCModel(nn.Module):
         )
     
     def forward(self, x):
+        N, P = x.shape[:2]      # (N, P, C, H, W)
+        x = x.view(N, P, -1)    # (N, P, CxHxW)
+        x = x.permute(0, 2, 1)  # (N, CxHxW, P)
         x = self.patch_layer(x)
         x = torch.squeeze(x, -1)
         x = self.fc(x)
@@ -36,6 +39,6 @@ class FCModel(nn.Module):
 if __name__ == '__main__':
     net = FCModel({'Data':{'patch_size': 64,
                            'n_patches': 8}})
-    input = torch.randn([7, 12288, 8])
+    input = torch.randn([7, 8, 3, 64, 64])
     output = net(input)
     print(output.size())
