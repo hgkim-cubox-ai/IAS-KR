@@ -28,7 +28,7 @@ Data:
   input:
     patch
   color:
-    hsv
+    rgb
   resize:
     height:
       224

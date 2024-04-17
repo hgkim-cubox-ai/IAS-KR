@@ -114,7 +114,7 @@ class IASDataset(Dataset):
     def read_image(self, path):
         # return: RGB, CxHxW Tensor
         img = cv2.imread(path)  # torchvision이나 pil로 읽으면 돌아감
-        img = img[:,:,::-1].copy()  # RGB -> RGB
+        img = img[:,:,::-1].copy()  # BGR -> RGB
         if self.cfg['color'] == 'hsv':
             img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL)
         return img
