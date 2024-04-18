@@ -30,7 +30,7 @@ def _train(cfg, rank, loader, model, optimizer, loss_fn_dict, epoch):
             loss.backward()
             optimizer.step()
             
-            acc, real_acc, fake_acc = calculate_accuracy(pred.data, label.data)
+            acc, real_acc, fake_acc = calculate_accuracy(pred.detach(), label.view(-1,1))
             
             loss_meter.update(loss.item(), batch_size)
             acc_meter.update(acc.item(), batch_size)
