@@ -74,7 +74,7 @@ class LBPModel(nn.Module):
         self.cfg = cfg
         self.backbone = CNN_ResNet(cfg['backbone'])
         self.make_regressor()
-        self.lbp_layer = LBPKernel(cfg['Data']['bacth_size'])
+        self.lbp_layer = LBPKernel(cfg['Data']['batch_size'])
         self.fc_lbp = nn.Sequential(
             nn.Linear(256, 256),
             nn.ReLU()
