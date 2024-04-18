@@ -27,9 +27,11 @@ Data:
     val:
   input:
     patch
+  type:
+    raw
   color:
     rgb
-  resize:
+  size:
     height:
       224
     width:

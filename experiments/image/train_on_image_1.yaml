@@ -27,9 +27,11 @@ Data:
     val:
   input:
     image
+  type:
+    aligned
   color:
     hsv
-  resize:
+  size:
     height:
       224
     width:
