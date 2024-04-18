@@ -91,7 +91,7 @@ class LBPModel(nn.Module):
         regressor.append(nn.Sigmoid())
         self.regressor = nn.Sequential(*regressor)
             
-    def forward(self, img, lbp_hist):
+    def forward(self, img):
         feat = self.backbone(img)
         feat = feat.view(feat.size(0), -1)  # flatten
         
