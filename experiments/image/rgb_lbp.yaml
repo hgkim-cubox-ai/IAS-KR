@@ -4,7 +4,7 @@ mode:
 seed:
   777
 save_path:
-  results/train_on_image_hsv
+  results/image_rgb_lbp_1
 distributed:
   backend: nccl
   address: localhost
@@ -48,7 +48,8 @@ Data:
 # Architecture
 model:
   # ias_model
-  fc_model
+  # fc_model
+  lbp_model
 backbone:
   resnet50
 regressor:
