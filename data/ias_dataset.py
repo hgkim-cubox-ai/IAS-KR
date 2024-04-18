@@ -126,7 +126,7 @@ class IASDataset(Dataset):
         # Return dict
         data_dict = {'label': torch.tensor(label).float()}
         if self.cfg['input'] == 'image':
-            img = self.resize(img)
+            img = self.resize(img.float())
             # mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
             # std = torch.std(img.float(), dim=(1,2), keepdim=True)
             # img = (img - mean) / std
