@@ -30,10 +30,10 @@ Data:
   type:
     aligned
   color:
-    hsv
+    rgb
   size:
     height:
-      224
+      144
     width:
       224
   n_patches:
