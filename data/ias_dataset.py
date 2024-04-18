@@ -36,7 +36,9 @@ class IASDataset(Dataset):
         self.resize = transforms.Compose([
             transforms.Resize(
                 (cfg['size']['height'], cfg['size']['width']),
-                transforms.InterpolationMode.BICUBIC)
+                transforms.InterpolationMode.BICUBIC
+            ),
+            transforms.Normalize(mean=0.5, std=0.5)
         ])
         
         # Prepare data
@@ -125,9 +127,9 @@ class IASDataset(Dataset):
         data_dict = {'label': torch.tensor(label).float()}
         if self.cfg['input'] == 'image':
             img = self.resize(img)
-            mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
-            std = torch.std(img.float(), dim=(1,2), keepdim=True)
-            img = (img - mean) / std
+            # mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
+            # std = torch.std(img.float(), dim=(1,2), keepdim=True)
+            # img = (img - mean) / std
             data_dict['input'] = img.detach()
         elif self.cfg['input'] == 'patch':
             patches = torch.stack(
