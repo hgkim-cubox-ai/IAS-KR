@@ -33,11 +33,13 @@ class IASDataset(Dataset):
         self.random_crop = transforms.Compose([
             transforms.RandomCrop(cfg['patch_size'])
         ])
-        self.resize = transforms.Compose([
+        self.transform = transforms.Compose([
+            transforms.ToPILImage(),
             transforms.Resize(
                 (cfg['size']['height'], cfg['size']['width']),
                 transforms.InterpolationMode.BICUBIC
             ),
+            transforms.ToTensor(),
             transforms.Normalize(mean=0.5, std=0.5)
         ])
         
@@ -121,12 +123,12 @@ class IASDataset(Dataset):
             if 'idcard_bbox' in annots:
                 bbox = annots['idcard_bbox']    # [top, bottom, left, right]
                 img = img[bbox[0]:bbox[1], bbox[2]:bbox[3], :]
-        img = torch.permute(torch.from_numpy(img), [2,0,1])   # HWC -> CHW
+        # img = torch.permute(torch.from_numpy(img), [2,0,1])   # HWC -> CHW
         
         # Return dict
         data_dict = {'label': torch.tensor(label).float()}
         if self.cfg['input'] == 'image':
-            img = self.resize(img.float())
+            img = self.transform(img)
             # mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
             # std = torch.std(img.float(), dim=(1,2), keepdim=True)
             # img = (img - mean) / std
@@ -135,7 +137,6 @@ class IASDataset(Dataset):
             patches = torch.stack(
                 [self.random_crop(img) for _ in range(self.cfg['n_patches'])]
             )
-            self.imshow(patches[0])
             mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
             std = torch.std(patches.float(), dim=(2,3), keepdim=True) + 1e-12
             patches = (patches - mean) / std
@@ -155,10 +156,10 @@ if __name__ == '__main__':
             'data_path': 'C:/Users/heegyoon/Desktop/data/IAS/kr/processed',
             'patch_size': 256,
             'n_patches': 9,
-            'size': {'height': 128, 'width': 128},
-            'input': 'patch',
+            'size': {'height': 144, 'width': 224},
+            'input': 'image',
             'color': 'rgb',
-            'type': 'raw'
+            'type': 'aligned'
         },
         'cubox_4k_2211'
     )
