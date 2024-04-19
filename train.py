@@ -34,8 +34,8 @@ def _train(cfg, rank, loader, model, optimizer, loss_fn_dict, epoch):
             
             loss_meter.update(loss.item(), batch_size)
             acc_meter.update(acc.item(), batch_size)
-            real_meter.update(real_acc.item(), batch_size)
-            fake_meter.update(fake_acc.item(), batch_size)
+            real_meter.update(real_acc.item(), ((label==1).nonzero().view(-1).size(0)+1e-8))
+            fake_meter.update(fake_acc.item(), ((label==0).nonzero().view(-1).size(0)+1e-8))
             
             t.set_postfix(
                 loss=loss_meter.avg,
