@@ -31,7 +31,9 @@ class IASDataset(Dataset):
         self.cfg = cfg
         self.is_train = train
         self.random_crop = transforms.Compose([
-            transforms.RandomCrop(cfg['patch_size'])
+            transforms.ToTensor(),
+            transforms.RandomCrop(cfg['patch_size']),
+            transforms.Normalize(mean=0.5, std=0.5)
         ])
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
@@ -42,7 +44,7 @@ class IASDataset(Dataset):
             transforms.ToTensor(),
             transforms.Normalize(mean=0.5, std=0.5)
         ])
-        
+
         # Prepare data
         img_paths = os.path.join(cfg['data_path'], dataset_name, '*.*')
         img_paths = glob(img_paths)
@@ -129,17 +131,11 @@ class IASDataset(Dataset):
         data_dict = {'label': torch.tensor(label).float()}
         if self.cfg['input'] == 'image':
             img = self.transform(img)
-            # mean = torch.mean(img.float(), dim=(1,2), keepdim=True)
-            # std = torch.std(img.float(), dim=(1,2), keepdim=True)
-            # img = (img - mean) / std
             data_dict['input'] = img.detach()
         elif self.cfg['input'] == 'patch':
             patches = torch.stack(
                 [self.random_crop(img) for _ in range(self.cfg['n_patches'])]
             )
-            mean = torch.mean(patches.float(), dim=(2,3), keepdim=True)
-            std = torch.std(patches.float(), dim=(2,3), keepdim=True) + 1e-12
-            patches = (patches - mean) / std
             data_dict['input'] = patches.detach()
         else:
             raise ValueError
