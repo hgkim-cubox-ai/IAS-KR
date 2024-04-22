@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, ConcatDataset
 from torch.utils.data.distributed import DistributedSampler
 
 from types_ import *
-from data import DATASET_DICT
+from data import IASDataset
 from models import MODEL_DICT
 from losses import LOSS_FN_DICT
 
@@ -29,18 +29,10 @@ def load_dataloader_dict(cfg: Dict[str, Any]) -> Dict[str, DataLoader]:
         if dataset_names is None:
             continue
         
-        # Concatenate all possible datasets in data_split (train/test/val)
-        datasets = []
-        for dataset_name in dataset_names:
-            datasets.append(
-                DATASET_DICT[dataset_name](cfg, dataset_name, data_split=='train')
-            )
-        dataset = ConcatDataset(datasets)
+        dataset = IASDataset(cfg, dataset_names, data_split=='train')
         sampler = DistributedSampler(dataset) if data_split=='train' else None
-        sampler = None
         dataloader_dict[data_split] = DataLoader(
-            # FIXME: shuffle
-            dataset=dataset, batch_size=cfg['batch_size'], shuffle=False,
+            dataset=dataset, batch_size=cfg['batch_size'],
             num_workers=cfg['num_workers'], pin_memory=True, sampler=sampler
         )
     

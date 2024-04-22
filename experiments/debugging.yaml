@@ -17,9 +17,9 @@ Data:
   datasets:
     train:
       - cubox_4k_2211
-      # - IAS_cubox_train_230102_renew
-      # - IAS_cubox_train_230117_extra
-      # - real_driver
+      - IAS_cubox_train_230102_renew
+      - IAS_cubox_train_230117_extra
+      - real_driver
       - real_id
       - real_passport
     test:
@@ -27,25 +27,29 @@ Data:
     val:
   input:
     image
-  resize:
+  type:
+    aligned
+  color:
+    rgb
+  size:
     height:
-      224
+      144
     width:
       224
   n_patches:
-    9
+    8
   patch_size:
-    128
+    64
   batch_size:
-    16
+    128
   num_workers:
-    0
+    16
 
 # Architecture
 model:
-  ias_model
+  lbp_model
 backbone:
-  resnet50
+  resnet18
 regressor:
   - 2048
   - 256
@@ -61,7 +65,7 @@ loss_functions:
 optimizer:
   adam
 base_lr:
-  0.001
+  0.005
 weight_decay:
   0
 adjust_lr:

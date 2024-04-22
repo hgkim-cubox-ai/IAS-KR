@@ -16,18 +16,16 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utils import is_image_file
 
 
-LABEL_DICT = {
-    'Real': ['real', 'Real', '1.리얼신분증'],
-    'Paper': ['paper', 'Paper', '2.복사신분증', 'synthetic'],
-    'Display': ['smartphone', 'SmartPhone', 'tablet', 'Tablet', '4.리플레이',
-                'monitor', 'Monitor', '5.캡처', 'Notebook', 'macbook',
-                'Display']
-}
-
-
 class IASDataset(Dataset):
-    def __init__(self, cfg, dataset_name, train: bool = True) -> None:
-        
+    LABEL_DICT = {
+        'Real': ['real', 'Real', '1.리얼신분증'],
+        'Paper': ['paper', 'Paper', '2.복사신분증', 'synthetic'],
+        'Display': ['smartphone', 'SmartPhone', 'tablet', 'Tablet', '4.리플레이',
+                    'monitor', 'Monitor', '5.캡처', 'Notebook', 'macbook',
+                    'Display']
+    }
+    
+    def __init__(self, cfg, dataset_names, train: bool = True) -> None:
         self.cfg = cfg
         self.is_train = train
         self.random_crop = transforms.Compose([
@@ -46,11 +44,11 @@ class IASDataset(Dataset):
         ])
 
         # Prepare data
-        img_paths = os.path.join(cfg['data_path'], dataset_name, '*.*')
-        img_paths = glob(img_paths)
-        self.img_paths = [i for i in img_paths if is_image_file(i)]
+        self.img_paths = []
+        for dataset_name in dataset_names:
+            paths = glob(os.path.join(cfg['data_path'], dataset_name, '*.*'))
+            self.img_paths += [i for i in paths if is_image_file(i)]
         self.json_paths = [os.path.splitext(i)[0]+'.json' for i in self.img_paths]
-        assert len(self.img_paths) == len(self.json_paths)
     
     def __len__(self):
         return len(self.img_paths)
@@ -108,11 +106,11 @@ class IASDataset(Dataset):
 
     def preprocess_input(self, img, annots):
         # Label real/fake
-        if annots['spoof_type'] in LABEL_DICT['Real']:
+        if annots['spoof_type'] in self.LABEL_DICT['Real']:
             label = 1
-        elif annots['spoof_type'] in LABEL_DICT['Paper']:
+        elif annots['spoof_type'] in self.LABEL_DICT['Paper']:
             label = 0
-        elif annots['spoof_type'] in LABEL_DICT['Display']:
+        elif annots['spoof_type'] in self.LABEL_DICT['Display']:
             label = 0
         else:
             raise ValueError(f'Invalid spoof type.')
@@ -125,8 +123,7 @@ class IASDataset(Dataset):
             if 'idcard_bbox' in annots:
                 bbox = annots['idcard_bbox']    # [top, bottom, left, right]
                 img = img[bbox[0]:bbox[1], bbox[2]:bbox[3], :]
-        # img = torch.permute(torch.from_numpy(img), [2,0,1])   # HWC -> CHW
-        
+
         # Return dict
         data_dict = {'label': torch.tensor(label).float()}
         if self.cfg['input'] == 'image':
@@ -157,7 +154,8 @@ if __name__ == '__main__':
             'color': 'rgb',
             'type': 'aligned'
         },
-        'cubox_4k_2211'
+        ['cubox_4k_2211', 'real_driver', 'IAS_cubox_train_230102_renew',
+         'IAS_cubox_train_230117_extra', 'real_id', 'real_passport']
     )
     from torch.utils.data import DataLoader
     from tqdm import tqdm
