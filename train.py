@@ -19,7 +19,7 @@ def _train(cfg, rank, loader, model, optimizer, loss_fn_dict, epoch):
         for i, input_dict in enumerate(t):
             batch_size = input_dict['input'].size(0)
             input_dict = send_data_dict_to_device(input_dict, rank)
-            print(rank, input_dict['input'].size())
+            
             pred = model(input_dict['input'])
             label = input_dict['label']
             
