@@ -95,7 +95,7 @@ class LBPModel(nn.Module):
         feat = self.backbone(img)
         feat = feat.view(feat.size(0), -1)  # flatten
         
-        lbp_hist, lbp_img = self.lbp_layer(img.detach())
+        lbp_hist, lbp_img = self.lbp_layer(img)
         lbp_hist = self.fc_lbp(lbp_hist)
         feat = torch.cat([feat, lbp_hist], dim=1)
         
