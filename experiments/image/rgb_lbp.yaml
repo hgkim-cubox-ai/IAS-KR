@@ -41,7 +41,7 @@ Data:
   patch_size:
     64
   batch_size:
-    512
+    256
   num_workers:
     32
 
