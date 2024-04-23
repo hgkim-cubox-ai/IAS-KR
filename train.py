@@ -95,6 +95,7 @@ def train(cfg, rank, dataloader_dict, model, optimizer, loss_fn_dict):
         # Train
         acc = _train(cfg, rank, dataloader_dict['train'],
                            model, optimizer, loss_fn_dict, epoch)
+        log.append(f'Epoch: {epoch+1}\n')
         log.append(f'[Train] loss: {acc[0]:.3f}\tacc: {acc[1]:.3f}\t'
                    f'real acc: {acc[2]:.3f}\tfake acc: {acc[3]:.3f}\n')
         
