@@ -4,7 +4,7 @@ mode:
 seed:
   777
 save_path:
-  results/patch_1
+  results/patch_2
 distributed:
   backend: nccl
   address: localhost
