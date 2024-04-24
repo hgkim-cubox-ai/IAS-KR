@@ -51,7 +51,7 @@ model:
   # fc_model
   lbp_model
 backbone:
-  resnet50
+  resnet18
 regressor:
   - 2048
   - 256
